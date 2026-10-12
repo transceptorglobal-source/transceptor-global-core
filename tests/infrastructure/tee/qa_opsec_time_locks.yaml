@@ -1,0 +1,181 @@
+
+# ==============================================================================
+
+# TRANSCEPTOR GLOBAL CONFIDENTIAL COMPUTING TEST MANIFEST
+# CORE MODULE: LIGHTWEIGHT CORE (GOVTECH/OPSEC CONTOUR 3 & TPE)
+# TEST SUITE: CONFIG-QA-OPSEC-TIME-LOCKS
+# UPDATED COMPLIANCE ANCHOR: 2026-09-08T17:14:35+03:00
+# ==============================================================================
+
+
+test_suite: "QA-OPSEC-TIME-LOCKS-VERIFICATION"
+environment_type: "TEE_SIMULATOR"
+enclave_isolation_mode: "STRICT_PRM"
+
+global_anchors:
+  expected_timestamp_format: "ISO-8601"
+  timezone_anchor: "Europe/Kiev"
+  enclave_clock_sync: true
+
+scenarios:
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-OPSEC-01 (Ping-Heartbeat / Заслон 2.0)
+  # ----------------------------------------------------------------------------
+  - id: "QA-OPSEC-01-HEARTBEAT-INTERVAL"
+    process: "Lightweight Core"
+    action: "VERIFY_CYCLIC_PULSE"
+    parameters:
+      interval_ms: 100
+      allowed_drift_ms: 1
+      sample_count: 10
+    assertions:
+      - match_log_pattern: "^\\[\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+03:00\\] \\[TEE_OK\\] Ping-Heartbeat active\\. Enclave boundary secured\\.$"
+      - strict_interval_check: "SUCCESS"
+
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-OPSEC-02 (Attention-Hijacking / Смарт-таймаут)
+  # ----------------------------------------------------------------------------
+  - id: "QA-OPSEC-02-ATTENTION-HIJACKING-TIMEOUTS"
+    process: "Fin-Satellite"
+    action: "EMULATE_LOOK_DIVERGENT"
+    trigger_conditions:
+      biometric_gaze_present: false
+    timeline_validation:
+      - check_at: "T_start + 5s"
+        expected_state: "STANDBY_LOCK"
+        ui_visibility: "MASKED"
+        expected_log: "Standby Lock activated"
+      - check_at: "T_start + 6s"
+        action: "EXECUTE_HOST_SCREENSHOT"
+        expected_output: "ZERO_BYTE_ARRAY"
+      - check_at: "T_start + 180s"
+        expected_state: "ATOMIC_UNLOAD"
+        ram_state: "PURGED_BY_ZERO"
+        failure_priority: "BLOCKER"
+
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-OPSEC-03 (Zeroization / Заслон 3.0)
+  # ----------------------------------------------------------------------------
+  - id: "QA-OPSEC-03-ZEROIZATION-LATENCY"
+    process: "Secure Enclave Debugger"
+    action: "SIMULATE_HARDWARE_BREACH"
+    trigger: "SIGSEGV"
+    metrics:
+      max_destruction_latency_ms: 10
+    assertions:
+      - wipe_keys: "ALL_ACTIVE_DECRYPTION_KEYS"
+      - final_log_marker: "[CRITICAL] Hardware breach detected. Zeroization complete. Memory purged."
+      - timestamp_capture: "REQUIRED"
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-TPE-01 (Trust-Policy-Engine / Контроль лимитов Траста)
+  # ----------------------------------------------------------------------------
+  - id: "QA-TPE-01-RESERVE-ALLOCATION-ENTROPY"
+    process: "Trust-Policy-Engine"
+    action: "AUDIT_RESERVE_TRANSACTION"
+    parameters:
+      t_max: 100000.0
+      t_net: 30000.0
+      k_entropy: 0.85
+    assertions:
+      - expected_psi_tpe: 0
+      - match_log_pattern: "^\\[\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+03:00\\] \\[WARNING\\] TPE: Reserve allocation rejected\\. Entropy limit exceeded\\.$"
+      - target_pool_state: "LOCKED"
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-TPE-02 (Policy Breach / Алгоритм Красной Кнопки)
+  # ----------------------------------------------------------------------------
+  - id: "QA-TPE-02-UNAUTHORIZED-DID-SANCTION"
+    process: "Trust-Policy-Engine"
+    action: "SIMULATE_NON_AUTHORIZED_INVOCATION"
+    trigger_conditions:
+      is_authorized: false
+      initial_weight: 4.50
+    assertions:
+      - expected_weight_post_sanction: 0.01
+      - match_log_pattern: "^\\[\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+03:00\\] \\[WARNING\\] TPE: Zero-Trust Ledger Error: Immutable Record Violation\\.$"
+environment_type: "TEE_SIMULATOR"
+enclave_isolation_mode: "STRICT_PRM"
+
+global_anchors:
+  expected_timestamp_format: "ISO-8601"
+  timezone_anchor: "Europe/Kiev"
+  enclave_clock_sync: true
+
+scenarios:
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-OPSEC-01 (Ping-Heartbeat / Заслон 2.0)
+  # ----------------------------------------------------------------------------
+  - id: "QA-OPSEC-01-HEARTBEAT-INTERVAL"
+    process: "Lightweight Core"
+    action: "VERIFY_CYCLIC_PULSE"
+    parameters:
+      interval_ms: 100
+      allowed_drift_ms: 1
+      sample_count: 10
+    assertions:
+      - match_log_pattern: "^\\[\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+03:00\\] \\[TEE_OK\\] Ping-Heartbeat active\\. Enclave boundary secured\\.$"
+      - strict_interval_check: "SUCCESS"
+
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-OPSEC-02 (Attention-Hijacking / Смарт-таймаут)
+  # ----------------------------------------------------------------------------
+  - id: "QA-OPSEC-02-ATTENTION-HIJACKING-TIMEOUTS"
+    process: "Fin-Satellite"
+    action: "EMULATE_LOOK_DIVERGENT"
+    trigger_conditions:
+      biometric_gaze_present: false
+    timeline_validation:
+      - check_at: "T_start + 5s"
+        expected_state: "STANDBY_LOCK"
+        ui_visibility: "MASKED"
+        expected_log: "Standby Lock activated"
+      - check_at: "T_start + 6s"
+        action: "EXECUTE_HOST_SCREENSHOT"
+        expected_output: "ZERO_BYTE_ARRAY"
+      - check_at: "T_start + 180s"
+        expected_state: "ATOMIC_UNLOAD"
+        ram_state: "PURGED_BY_ZERO"
+        failure_priority: "BLOCKER"
+
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-OPSEC-03 (Zeroization / Заслон 3.0)
+  # ----------------------------------------------------------------------------
+  - id: "QA-OPSEC-03-ZEROIZATION-LATENCY"
+    process: "Secure Enclave Debugger"
+    action: "SIMULATE_HARDWARE_BREACH"
+    trigger: "SIGSEGV"
+    metrics:
+      max_destruction_latency_ms: 10
+    assertions:
+      - wipe_keys: "ALL_ACTIVE_DECRYPTION_KEYS"
+      - final_log_marker: "[CRITICAL] Hardware breach detected. Zeroization complete. Memory purged."
+      - timestamp_capture: "REQUIRED"
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-TPE-01 (Trust-Policy-Engine / Контроль лимитов Траста)
+  # ----------------------------------------------------------------------------
+  - id: "QA-TPE-01-RESERVE-ALLOCATION-ENTROPY"
+    process: "Trust-Policy-Engine"
+    action: "AUDIT_RESERVE_TRANSACTION"
+    parameters:
+      t_max: 100000.0
+      t_net: 30000.0
+      k_entropy: 0.85
+    assertions:
+      - expected_psi_tpe: 0
+      - match_log_pattern: "^\\[\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+03:00\\] \\[WARNING\\] TPE: Reserve allocation rejected\\. Entropy limit exceeded\\.$"
+      - target_pool_state: "LOCKED"
+  # ----------------------------------------------------------------------------
+  # TEST-CASE: QA-TPE-02 (Policy Breach / Алгоритм Красной Кнопки)
+  # ----------------------------------------------------------------------------
+  - id: "QA-TPE-02-UNAUTHORIZED-DID-SANCTION"
+    process: "Trust-Policy-Engine"
+    action: "SIMULATE_NON_AUTHORIZED_INVOCATION"
+    trigger_conditions:
+      is_authorized: false
+      initial_weight: 4.50
+    assertions:
+      - expected_weight_post_sanction: 0.01
+      - match_log_pattern: "^\\[\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\+03:00\\] \\[WARNING\\] TPE: Zero-Trust Ledger Error: Immutable Record Violation\\.$"
+
+
+oe-debugger --enclave=./lightweight_core.elf --config=qa_opsec_time_locks.yaml
+

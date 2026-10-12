@@ -1,0 +1,23 @@
+# Переменные окружения и секреты
+.env
+.env.*
+!.env.example
+secure_tokens.json
+
+# Локальные архивы, логи и артефакты
+backup_vault/
+*.log
+*.gpg
+*.tar.gz
+
+# Временные файлы сборки C++ и Python
+build/
+bin/
+*.o
+*.so
+*.dll
+*.exe
+__pycache__/
+.pytest_cache/
+.DS_Store
+.tmp.driveupload/

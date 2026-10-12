@@ -1,0 +1,39 @@
+# ==============================================================================
+# TRANSCEPTOR GLOBAL: LIGHTWEIGHT CORE SECURE CONTAINMENT
+# TARGET: TEE ENCLAVE RUNTIME ENVIRONMENT (CONTOURS 3, 4 & 5)
+# JURISDICTIONAL COMPLIANCE CLOCK: 2026-09-15T16:42:58+03:00
+# ==============================================================================
+
+FROM alpine:3.18 AS builder
+
+# Установка системных зависимостей для сборки ядра C++17/C++20
+RUN apk add --no-cache g++ make cmake git build-base
+
+WORKDIR /usr/src/transceptor_core
+
+# Копирование исходного кода ядра
+COPY . .
+
+# Сборка аудит-тестов и системных бинарных файлов ядра C++
+RUN g++ -std=c++17 -I. main_security_audit.cpp -o security_audit
+
+FROM alpine:3.18
+
+# Настройка безопасной среды исполнения нулевого доверия
+RUN apk add --no-cache libstdc++ libgcc bash && \
+    addgroup -S transceptor && adduser -S tsguser -G transceptor
+
+WORKDIR /home/tsguser/enclave_runtime
+
+# Перенос скомпилированных защищенных апплетов и бинарных файлов из сборочного контейнера
+COPY --from=builder /usr/src/transceptor_core/security_audit .
+
+RUN chown -R tsguser:transceptor /home/tsguser/enclave_runtime
+
+# Переключение на непривилегированного системного пользователя
+USER tsguser
+
+# Декларация контрольного порта для обмена сетевыми аттестатами (Ping-Heartbeat / MPC)
+EXPOSE 8080
+
+ENTRYPOINT ["./security_audit"]

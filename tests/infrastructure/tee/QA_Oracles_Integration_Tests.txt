@@ -1,0 +1,44 @@
+
+
+Запрос (curl):
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/oracle/validate-initiative' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "author_did": "did:transceptor:citizen:0x5555",
+  "initiative_id_hash": "0xINITIATIVE_RAW_HASH_999",
+  "raw_text": "Мы требуем немедленно снизить тарифы на распределение энергии во всех регионах Ойкумены, сделать их бесплатными для каждого жителя и увеличить социальные выплаты за счет профицита паевого фонда без изменения налоговой сетки.",
+  "emulated_deepfake_signal": false
+}'
+Ожидаемый ответ от ИИ-Оракула (JSON):
+{
+  "law_score": 0.5241,
+  "fin_score": 0.4000,
+  "eco_score": 0.4500,
+  "deepfake_or_fraud_detected": false
+}
+> **Критический маркер комплаенса:** Отсутствие ключевых слов «смета» и «финансирование» принудительно опустило показатель `fin_score` до значения `0.4000`. При передаче этой Сценарной Справки в TEE-ядро математический фильтр $\\Psi = \\prod \\text{Step}(Comp\_i - Threshold\_i)$ выдаст итоговое значение $\\Psi = 0$, и инициатива будет автоматически заблокирована на этапе премодерации.
+2. Тест-кейс QA-POPULISM-02: Фиксация генеративного фрода (Deepfake / Бот-атака)
+Этот запрос имитирует ситуацию, когда Edge AI-Наставник на абонентском терминале фиксирует применение генеративных нейросетей или подмену видеопотока Liveness Check в момент публикации.
+
+Запрос (curl):
+curl -X 'POST' \
+  'http://localhost:8000/api/v1/oracle/validate-initiative' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "author_did": "did:transceptor:mentor:0xCOMPROMISED",
+  "initiative_id_hash": "0xINITIATIVE_FRAUD_HASH_666",
+  "raw_text": "Программа развития когнитивных треков кампуса Агоры на следующий образовательный спринт.",
+  "emulated_deepfake_signal": true
+}'
+Ожидаемый ответ от ИИ-Оракула (JSON):
+{
+  "law_score": 0.0,
+  "fin_score": 0.0,
+  "eco_score": 0.0,
+  "deepfake_or_fraud_detected": true
+}
+> **Критический маркер комплаенса:** Атомарный флаг `deepfake_or_fraud_detected: true` выступает для C++ смарт-контракта Безотказным триггером. При получении такой справки ядро Lightweight Core мгновенно активирует протокол санкций и обрушает электоральный вес DID-профиля нарушителя до технологического минимума `0.01`.Оба проекта — низкоуровневая кастодиальная база на C++ и высокоуровневый когнитивный NLP-микросервис на Python — полностью сформированы, покрыты тестами, контейнеризированы и готовы к передаче инженерной группе для развертывания пилотных узлов платформы Transceptor Global.
+
